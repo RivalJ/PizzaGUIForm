@@ -360,6 +360,4 @@ public class PizzaGUIFrame extends JFrame {
             toppingsOption6.setSelected(false);
         }
     }
-
-    //ignore this, just placing here to force another git commit
 }
