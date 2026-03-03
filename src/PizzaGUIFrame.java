@@ -10,26 +10,30 @@ public class PizzaGUIFrame extends JFrame {
     private JRadioButton crustOption1, crustOption2, crustOption3;
     private JComboBox sizeOptions = new JComboBox();
     private JCheckBox toppingsOption1, toppingsOption2, toppingsOption3, toppingsOption4, toppingsOption5, toppingsOption6;
-    private JPanel optionsPanel, sizeOptionsPanel, toppingsOptionsPanel, crustOptionsPanel, receiptPanel, guiOptions;
+    private JPanel optionsPanel, sizeOptionsPanel, toppingsOptionsPanel, crustOptionsPanel, receiptPanel, guiOptions, centerPanel;
     private JTextArea receipt;
 
     public PizzaGUIFrame() {
         Dimension baseScreenSize = Toolkit.getDefaultToolkit().getScreenSize();
         float applicationScaleFactorWidth = 1f/3f;
-        float applicationScaleFactorHeight = 2f/3f;
+        float applicationScaleFactorHeight = 2f/5f;
         Dimension applicationSize = new Dimension(
                 (int)(baseScreenSize.width * applicationScaleFactorWidth),
                 (int)(baseScreenSize.height * applicationScaleFactorHeight)
         );
 
-        super.setTitle("Tic-Tac-Toe");
+        super.setTitle("Pizza Order");
         super.setSize(applicationSize.width, applicationSize.height);
         super.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         super.setLayout(new BorderLayout());
 
+        centerPanel = new JPanel();
+        SetupOptions(centerPanel);
+        SetupReceiptPanel(centerPanel);
+        centerPanel.setLayout(new FlowLayout());
+        super.add(centerPanel, BorderLayout.CENTER);
 
-        SetupOptions();
-        SetupReceiptPanel();
+
         SetupGUIOptions();
 
         super.setLocationRelativeTo(null);
@@ -39,15 +43,25 @@ public class PizzaGUIFrame extends JFrame {
      * sets up the options panel,
      * makes the main method cleaner.
      * these are the options that are used to customize the pizza
+     * @param panel the panel that the options will be added to
      */
-    private void SetupOptions(){
+    private void SetupOptions(JPanel panel){
         optionsPanel = new JPanel();
+        JPanel leftPanel, rightPanel;
+        leftPanel = new JPanel();
+        rightPanel = new JPanel();
 
-        SetupCrustOptions(optionsPanel);
-        SetupSizeOptions(optionsPanel);
-        SetupToppingsOptions(optionsPanel);
+        SetupCrustOptions(leftPanel);
+        SetupSizeOptions(leftPanel);
+        SetupToppingsOptions(rightPanel);
 
-        super.add(optionsPanel, BorderLayout.CENTER);
+        leftPanel.setLayout(new GridLayout(0, 1));
+
+        optionsPanel.setLayout(new FlowLayout());
+        optionsPanel.add(leftPanel);
+        optionsPanel.add(rightPanel);
+
+        panel.add(optionsPanel);
     }
 
     /**
@@ -74,6 +88,7 @@ public class PizzaGUIFrame extends JFrame {
         crustOptionsPanel.add(crustOption3);
 
         crustOptionsPanel.setBorder(titledBorder);
+        crustOptionsPanel.setLayout(new GridLayout(0, 1));
 
         optionsPanel.add(crustOptionsPanel);
     }
@@ -94,6 +109,7 @@ public class PizzaGUIFrame extends JFrame {
 
         sizeOptionsPanel.setBorder(titledBorder);
         sizeOptionsPanel.add(sizeOptions);
+
         optionsPanel.add(sizeOptionsPanel);
     }
 
@@ -121,25 +137,28 @@ public class PizzaGUIFrame extends JFrame {
         toppingsOptionsPanel.add(toppingsOption6);
         toppingsOptionsPanel.setBorder(titledBorder);
 
+        toppingsOptionsPanel.setLayout(new GridLayout(0, 1));
+
         optionsPanel.add(toppingsOptionsPanel);
     }
 
     /**
      * sets up the receipt panel
      * makes the main method cleaner
+     * @param panel the panel that the receipt will be added to
      */
-    private void SetupReceiptPanel(){
+    private void SetupReceiptPanel(JPanel panel){
         receiptPanel = new JPanel();
 
         receipt = new JTextArea();
         receipt.setEditable(false);
-        receipt.setPreferredSize(new Dimension(300, 200));
+        receipt.setPreferredSize(new Dimension(300, 300));
 
         receiptPanel.add(receipt);
 
         receipt.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));//ensures the text formatting properly works
 
-        super.add(receiptPanel, BorderLayout.SOUTH);
+        panel.add(receiptPanel);
     }
 
     /**
@@ -165,7 +184,7 @@ public class PizzaGUIFrame extends JFrame {
         Clear.addActionListener(new ClearListener());
         Quit.addActionListener(e -> System.exit(0));
 
-        super.add(guiOptions, BorderLayout.NORTH);
+        super.add(guiOptions, BorderLayout.PAGE_END);
     }
 
     /**
@@ -296,7 +315,7 @@ public class PizzaGUIFrame extends JFrame {
         public void actionPerformed(ActionEvent e) {
             receipt.setText("");
             crustOption1.setSelected(false);
-            crustOption2.setSelected(true);
+            crustOption2.setSelected(false);
             crustOption3.setSelected(false);
             sizeOptions.setSelectedIndex(0);
             toppingsOption1.setSelected(false);
