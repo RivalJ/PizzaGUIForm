@@ -226,7 +226,7 @@ public class PizzaGUIFrame extends JFrame {
 
             //print our crust and size options
             PrintSize();
-            PrintLine("Crust: ", crustOption1.getText(), null);
+            PrintCrust();
 
             //print our toppings options
             String toppingsText = "";
@@ -274,6 +274,21 @@ public class PizzaGUIFrame extends JFrame {
             else if(sizeOptions.getSelectedItem().toString().equals("Super")){
                 PrintLine("Size: ", "Super", 20.00);
                 subTotal += 20.00;
+            }
+        }
+
+        /**
+         * prints the crust type based on the selected option, makes the main method cleaner
+         */
+        private void PrintCrust(){
+            if(crustOption1.isSelected()){
+                PrintLine("Crust: ", "Thin", 0.00);
+            }
+            else if(crustOption2.isSelected()){
+                PrintLine("Crust: ", "Regular", 0.00);
+            }
+            else if(crustOption3.isSelected()){
+                PrintLine("Crust: ", "Deep Dish", 0.00);
             }
         }
 
