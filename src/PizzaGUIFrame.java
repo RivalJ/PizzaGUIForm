@@ -35,6 +35,11 @@ public class PizzaGUIFrame extends JFrame {
         super.setLocationRelativeTo(null);
     }
 
+    /**
+     * sets up the options panel,
+     * makes the main method cleaner.
+     * these are the options that are used to customize the pizza
+     */
     private void SetupOptions(){
         optionsPanel = new JPanel();
 
@@ -44,6 +49,12 @@ public class PizzaGUIFrame extends JFrame {
 
         super.add(optionsPanel, BorderLayout.CENTER);
     }
+
+    /**
+     * sets up the crust options panel,
+     * part of the options panel, makes the main method cleaner
+     * @param optionsPanel the panel that the crust options will be added to
+     */
     private void SetupCrustOptions(JPanel optionsPanel){
         crustOptionsPanel = new JPanel();
         TitledBorder titledBorder = BorderFactory.createTitledBorder("Crust");
@@ -66,6 +77,12 @@ public class PizzaGUIFrame extends JFrame {
 
         optionsPanel.add(crustOptionsPanel);
     }
+
+    /**
+     * sets up the size options panel,
+     * part of the options panel, makes the main method cleaner
+     * @param optionsPanel the panel that the size options will be added to
+     */
     private void SetupSizeOptions(JPanel optionsPanel){
         sizeOptionsPanel = new JPanel();
         TitledBorder titledBorder = BorderFactory.createTitledBorder("Size");
@@ -79,6 +96,12 @@ public class PizzaGUIFrame extends JFrame {
         sizeOptionsPanel.add(sizeOptions);
         optionsPanel.add(sizeOptionsPanel);
     }
+
+    /**
+     * sets up the toppings options panel,
+     * part of the options panel, makes the main method cleaner
+     * @param optionsPanel the panel that the toppings options will be added to
+     */
     private void SetupToppingsOptions(JPanel optionsPanel){
         toppingsOptionsPanel = new JPanel();
         TitledBorder titledBorder = BorderFactory.createTitledBorder("Toppings");
@@ -100,15 +123,31 @@ public class PizzaGUIFrame extends JFrame {
 
         optionsPanel.add(toppingsOptionsPanel);
     }
+
+    /**
+     * sets up the receipt panel
+     * makes the main method cleaner
+     */
     private void SetupReceiptPanel(){
         receiptPanel = new JPanel();
 
         receipt = new JTextArea();
         receipt.setEditable(false);
+        receipt.setPreferredSize(new Dimension(300, 200));
+
         receiptPanel.add(receipt);
+
+        receipt.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));//ensures the text formatting properly works
 
         super.add(receiptPanel, BorderLayout.SOUTH);
     }
+
+    /**
+     * sets up the gui options panel
+     * makes the main method cleaner
+     *
+     * gui options include the order, clear, and quit buttons
+     */
     private void SetupGUIOptions(){
         guiOptions = new JPanel();
 
@@ -123,25 +162,85 @@ public class PizzaGUIFrame extends JFrame {
         guiOptions.add(Quit);
 
         Order.addActionListener(new OrderListener());
+        Clear.addActionListener(new ClearListener());
+        Quit.addActionListener(e -> System.exit(0));
 
         super.add(guiOptions, BorderLayout.NORTH);
     }
 
+    /**
+     * handles the complex process of printing the receipt
+     * also calculates the subtotal, tax, and total
+     * contains several methods, this was done so that this class could be moved to a separate file with minimal changes
+     */
     private class OrderListener implements ActionListener {
+        private int receiptWidth;
+        private double subTotal, tax, total;
         @Override
         public void actionPerformed(ActionEvent e) {
+            subTotal = 0.00;
+            receiptWidth = receipt.getWidth()/12;
             receipt.setText("");
-            String receiptText = "";
-            receiptText += "Crust: " + crustOption1.getText() + "\n";
-            receiptText += "Size: " + sizeOptions.getSelectedItem() + "\n";
 
-            receiptText += "Toppings: ";
+            receipt.append("=".repeat(receiptWidth * receipt.getFont().getSize()) + "\n");//line for formatting
+
+            //print our crust and size options
+            PrintSize();
+            PrintLine("Crust: ", crustOption1.getText(), null);
+
+            //print our toppings options
+            String toppingsText = "";
             List<String> toppings = GetToppings();
-            for(String topping : toppings){
-                receiptText += "  " + topping + "\n";
+            if(!toppings.isEmpty()){
+                receipt.append("Toppings: \n");
+                for(String topping : toppings){
+                    PrintLine(topping, "", 1.00, 4);
+                    subTotal += 1.00;
+                }
             }
-            receipt.setText(receiptText);
+            else{
+                toppingsText += "No toppings\n";
+            }
+            receipt.append(toppingsText);
+
+            //print our sub total and tax
+            PrintLine("SubTotal", "", subTotal);
+            PrintLine("Tax", "", tax = subTotal * 0.075);
+
+            receipt.append("-".repeat(receiptWidth * receipt.getFont().getSize()) + "\n");//separator line
+            //print the total
+            PrintLine("Total", "", total = subTotal + tax);
+
+            receipt.append("=".repeat(receiptWidth * receipt.getFont().getSize()) + "\n");//line for formatting
         }
+
+        /**
+         * prints the size of the pizza based on the selected option, also adds the price to the total for calculation
+         * makes the main method cleaner
+         */
+        private void PrintSize(){
+            if(sizeOptions.getSelectedItem().toString().equals("Small")){
+                PrintLine("Size: ", "Small", 8.00);
+                subTotal += 8.00;
+            }
+            else if(sizeOptions.getSelectedItem().toString().equals("Medium")){
+                PrintLine("Size: ", "Medium", 12.00);
+                subTotal += 12.00;
+            }
+            else if(sizeOptions.getSelectedItem().toString().equals("Large")){
+                PrintLine("Size: ", "Large", 16.00);
+                subTotal += 16.00;
+            }
+            else if(sizeOptions.getSelectedItem().toString().equals("Super")){
+                PrintLine("Size: ", "Super", 20.00);
+                subTotal += 20.00;
+            }
+        }
+
+        /**
+         * gets a string list of the selected toppings, makes the main method cleaner
+         * @return
+         */
         private List<String> GetToppings(){
             List<String> toppings = new ArrayList<>();
             if(toppingsOption1.isSelected()){
@@ -163,6 +262,49 @@ public class PizzaGUIFrame extends JFrame {
                 toppings.add(toppingsOption6.getText());
             }
             return toppings;
+        }
+
+        /**
+         * Prints a formatted line to the receipt
+         * @param title name of the option that is being printed, left aligned
+         * @param option name of the choice that is being printed, left aligned
+         * @param price price of the option being printed, right aligned
+         */
+        private void PrintLine(String title, String option, Double price){
+            String formatString = "%-"+ receiptWidth +"s%10.2f%n";
+            receipt.append(String.format(formatString, title + option, price));
+        }
+
+        /**
+         * Prints a formatted line to the receipt with an indent
+         * @param title name of the option that is being printed, left aligned
+         * @param option name of the choice that is being printed, left aligned
+         * @param price price of the option being printed, right aligned
+         * @param indent number of spaces to indent the line
+         */
+        private void PrintLine(String title, String option, Double price, int indent){
+            String formatString = " ".repeat(indent) + "%-"+(receiptWidth - indent)+"s%10.2f%n";
+            receipt.append(String.format(formatString, title + option, price));
+        }
+    }
+
+    /**
+     * clears the receipt and all user choices from the screen
+     */
+    private class ClearListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            receipt.setText("");
+            crustOption1.setSelected(false);
+            crustOption2.setSelected(true);
+            crustOption3.setSelected(false);
+            sizeOptions.setSelectedIndex(0);
+            toppingsOption1.setSelected(false);
+            toppingsOption2.setSelected(false);
+            toppingsOption3.setSelected(false);
+            toppingsOption4.setSelected(false);
+            toppingsOption5.setSelected(false);
+            toppingsOption6.setSelected(false);
         }
     }
 }
