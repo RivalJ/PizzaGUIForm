@@ -12,6 +12,7 @@ public class PizzaGUIFrame extends JFrame {
     private JCheckBox toppingsOption1, toppingsOption2, toppingsOption3, toppingsOption4, toppingsOption5, toppingsOption6;
     private JPanel optionsPanel, sizeOptionsPanel, toppingsOptionsPanel, crustOptionsPanel, receiptPanel, guiOptions, centerPanel;
     private JTextArea receipt;
+    ButtonGroup crustOptionsGroup;
 
     public PizzaGUIFrame() {
         Dimension baseScreenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -73,7 +74,7 @@ public class PizzaGUIFrame extends JFrame {
         crustOptionsPanel = new JPanel();
         TitledBorder titledBorder = BorderFactory.createTitledBorder("Crust");
 
-        ButtonGroup crustOptionsGroup = new ButtonGroup();
+        crustOptionsGroup = new ButtonGroup();
 
         crustOption1 = new JRadioButton("Thin");
         crustOption2 = new JRadioButton("Regular");
@@ -152,11 +153,13 @@ public class PizzaGUIFrame extends JFrame {
 
         receipt = new JTextArea();
         receipt.setEditable(false);
-        receipt.setPreferredSize(new Dimension(300, 300));
-
-        receiptPanel.add(receipt);
 
         receipt.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));//ensures the text formatting properly works
+        JScrollPane scrollPane = new JScrollPane(receipt);
+        scrollPane.setPreferredSize(new Dimension(300, 300));
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        receiptPanel.add(scrollPane);
 
         panel.add(receiptPanel);
     }
@@ -182,7 +185,16 @@ public class PizzaGUIFrame extends JFrame {
 
         Order.addActionListener(new OrderListener());
         Clear.addActionListener(new ClearListener());
-        Quit.addActionListener(e -> System.exit(0));
+        Quit.addActionListener(e -> {
+            int response = JOptionPane.showConfirmDialog(null,
+                    "Are you sure you want to quit?",
+                    "Exit",
+                    JOptionPane.YES_NO_OPTION
+            );
+            if (response == JOptionPane.YES_OPTION) {
+                System.exit(0);
+            }
+        });
 
         super.add(guiOptions, BorderLayout.PAGE_END);
     }
@@ -197,11 +209,20 @@ public class PizzaGUIFrame extends JFrame {
         private double subTotal, tax, total;
         @Override
         public void actionPerformed(ActionEvent e) {
+            if (!crustOption1.isSelected() && !crustOption2.isSelected() && !crustOption3.isSelected()) {
+                JOptionPane.showMessageDialog(PizzaGUIFrame.this, "Please select a crust type!");
+                return;
+            }
+            if (GetToppings().isEmpty()) {
+                JOptionPane.showMessageDialog(PizzaGUIFrame.this, "Please select at least one topping!");
+                return;
+            }
             subTotal = 0.00;
-            receiptWidth = receipt.getWidth()/12;
+            //receiptWidth = receipt.getWidth()/12;
+            receiptWidth = 25;
             receipt.setText("");
 
-            receipt.append("=".repeat(receiptWidth * receipt.getFont().getSize()) + "\n");//line for formatting
+            receipt.append("=".repeat(receiptWidth*2) + "\n");//line for formatting
 
             //print our crust and size options
             PrintSize();
@@ -226,11 +247,11 @@ public class PizzaGUIFrame extends JFrame {
             PrintLine("SubTotal", "", subTotal);
             PrintLine("Tax", "", tax = subTotal * 0.075);
 
-            receipt.append("-".repeat(receiptWidth * receipt.getFont().getSize()) + "\n");//separator line
+            receipt.append("-".repeat(receiptWidth*2) + "\n");//separator line
             //print the total
             PrintLine("Total", "", total = subTotal + tax);
 
-            receipt.append("=".repeat(receiptWidth * receipt.getFont().getSize()) + "\n");//line for formatting
+            receipt.append("=".repeat(receiptWidth*2) + "\n");//line for formatting
         }
 
         /**
@@ -314,9 +335,7 @@ public class PizzaGUIFrame extends JFrame {
         @Override
         public void actionPerformed(ActionEvent e) {
             receipt.setText("");
-            crustOption1.setSelected(false);
-            crustOption2.setSelected(false);
-            crustOption3.setSelected(false);
+            crustOptionsGroup.clearSelection();
             sizeOptions.setSelectedIndex(0);
             toppingsOption1.setSelected(false);
             toppingsOption2.setSelected(false);
